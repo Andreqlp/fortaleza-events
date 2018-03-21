@@ -4,6 +4,7 @@
  * Author URI:        http://www.cwebconsultants.com/
  */
 /* Function for session message */
+
 if (!function_exists('set_error_message')) {
     function set_error_message($msg,$type){
         @session_start();
@@ -47,23 +48,6 @@ if (!function_exists('pr')) {
         echo '</pre>';
     }
 }
-
-/* assign template to pages */
-
-add_action("template_redirect", 'account_page_redirect');
-function account_page_redirect() {
-   global $wp;
-
-   include_once( ABSPATH . 'wp-admin/includes/plugin.php' );  
-   //Set myAccount Custom Page Template 
-       if (get_the_ID()== get_option('all_agenda')) {
-           $templatefilename = 'all_agenda';
-               if (file_exists(CWEB_FS_PATH1.'public/template/all_agenda.php')) {
-                   $return_template = CWEB_FS_PATH1.'public/template/all_agenda.php';
-                    do_account_redirect($return_template);
-               }
-       }
-}
 if (!function_exists('do_account_redirect')) {
        //Finishing setting templates 
        function do_account_redirect($url) {
@@ -79,6 +63,34 @@ if (!function_exists('do_account_redirect')) {
 }
 
 //end assignment to pages
+/* assign template to pages */
+
+// add_action("template_redirect", 'account_page_redirect');
+// function account_page_redirect() {
+//    global $wp;
+//   include_once( ABSPATH . 'wp-admin/includes/plugin.php' );  
+//    //Set myAccount Custom Page Template 
+//     if (get_the_ID()== get_option('all_agenda')) {
+//            $templatefilename = 'all_agenda';
+//                if (file_exists(CWEB_FS_PATH1.'public/template/all_agenda.php')) {
+// 	                $return_template = CWEB_FS_PATH1.'public/template/all_agenda.php';
+//                     do_account_redirect($return_template);
+//                }
+//        }
+// }
+
+
+add_filter( 'page_template', 'wp_page_template' );
+    function wp_page_template( $page_template )
+    {
+        if (get_the_ID()== get_option('all_agenda')) {
+            $page_template = CWEB_FS_PATH1.'public/template/all_agenda.php';
+        }
+        return $page_template;
+    }
+
+
+
 add_action( 'init', 'theme_name_scripts' );
 function theme_name_scripts() {
    
@@ -270,6 +282,41 @@ function create_classification_taxonomies(){
   );
 
   register_taxonomy( 'start_at', 'agenda', $args );
+
+
+// add categories
+
+    $labels = array(
+    'name'                       => _x( 'Category', 'taxonomy general name' ),
+    'singular_name'              => _x( 'category', 'taxonomy singular name' ),
+    'search_items'               => __( 'Search categoryt' ),
+    'popular_items'              => __( 'Popular category' ),
+    'all_items'                  => __( 'All category' ),
+    'parent_item'                => null,
+    'parent_item_colon'          => null,
+    'edit_item'                  => __( 'Edit category' ),
+    'update_item'                => __( 'Update category' ),
+    'add_new_item'               => __( 'Add New category' ),
+    'new_item_name'              => __( 'New category' ),
+    'separate_items_with_commas' => __( 'Separate category with commas' ),
+    'add_or_remove_items'        => __( 'Add or remove category' ),
+    'choose_from_most_used'      => __( 'Choose from the most used category' ),
+    'not_found'                  => __( 'No Start-At found.' ),
+    'menu_name'                  => __( 'Category' ),
+  );
+
+  $args = array(
+    'hierarchical'          => true,
+    'labels'                => $labels,
+    'show_ui'               => true,
+    'show_admin_column'     => true,
+    'update_count_callback' => '_update_post_term_count',
+    'query_var'             => true,
+    'rewrite'               => array( 'slug' => 'cat_gory' ),
+  );
+
+  register_taxonomy( 'Cat_gory', 'agenda', $args );
+
         
 //end texonomies
 }
@@ -431,9 +478,12 @@ function search_agenda_list(){
         $args = array(
             'post_type' => 'agenda',
             'post_status' => 'publish',
-            'order' => 'DESC',
-            'orderby' => 'name',
+            'orderby'           => 'meta_value',
+            'meta_key'          => '_start_date',
+            'meta_type'         => 'DATE',
+            'order'             => 'DESC',
             'posts_per_page' => -1
+
         );
         
         if(!empty($_post_title)):
@@ -499,13 +549,20 @@ function search_agenda_list(){
                 if ( $the_query->have_posts() ) {
                         while ($the_query->have_posts() ) { $the_query->the_post(); ?>
                            <div class='<?php echo $class; ?> <?php if ($i % $value == 0){echo 'first';}?>'>
-                                <div class="agenda_image">
+                               <div class="agenda_image" id="container_hover">
                                     <?php  $agenda_img=get_the_post_thumbnail_url(); 
                                     if(!empty($agenda_img)){?>
                                        <img src="<?php echo $agenda_img; ?>"/>
                                     <?php }else{?>
                                         <img src="<?php echo CWEB_WS_PATH1;?>/public/assets/img/dummy.jpg"/>
                                     <?php } ?>
+                                    <div class="overlay_custom">
+                                     <div class="text_hover">
+                                            <a href="<?php echo get_the_permalink(); ?>">
+                                                <i class="fa fa-link" aria-hidden="true"></i>
+                                            </a>
+                                        </div>
+                                    </div> 
                                 </div>
                                 <div class="agenda_title">
                                     <h1><a style="color:#c0392b;" href="<?php echo get_the_permalink(); ?>"><?php echo get_the_title(); ?></a></h1>                      </div>
@@ -539,6 +596,119 @@ function search_agenda_list(){
     }
 add_action('wp_ajax_search_agenda_list', 'search_agenda_list');
 add_action("wp_ajax_nopriv_search_agenda_list", 'search_agenda_list'); 
+
+
+// shortcode for highlights events
+
+    function highlight_events($atts){
+    $return='';
+    $a = shortcode_atts( array(
+                'category-name' => '#',
+            ), $atts );
+    $cat_name=$a['category-name'];
+    //get cat_id by cat_name
+    $cat_details=get_term_by( 'slug', $cat_name, 'Cat_gory');
+    $cat_id=$cat_details->term_id;
+    $return.='<div class="all_agenda">
+    <div class="inner_agenda">';
+            // The Query
+                $args = array(
+                     'post_type' => 'agenda',
+                     'post_status' => 'publish',
+                     'orderby'           => 'meta_value',
+                     'meta_key'          => '_start_date',
+                     'meta_type'         => 'DATE',
+                     'order'             => 'DESC',
+                     'posts_per_page' => -1,
+                         'tax_query' => array(
+                            array(
+                                'taxonomy' => 'Cat_gory',
+                                'field'    => 'term_id',
+                                'terms'    => $cat_id,
+                            ),
+                        ),
+                );
+
+                $the_query = new WP_Query( $args );
+               
+                $listing_layout=get_option('listing_layout');
+                if($listing_layout=='three_colums'){
+                    $class='one_Third';
+                    $value=3;
+                }elseif ($listing_layout=='two_colums') {
+                    $class='one_half';
+                    $value=2;
+                }else{
+                    $class='one_Third';
+                    $value='3';
+                }
+            // The Loop
+                $return.='<div class="inner_rows">';
+                $return.='<div class="row">';
+                $i = 0;
+                if ( $the_query->have_posts() ) {
+                        while ($the_query->have_posts() ) { $the_query->the_post(); 
+                           $return.='<div class="'.$class." ".(($i % $value == 0)?'first':'').'">
+                           
+                                <div class="agenda_image" id="container_hover">';
+                                    $agenda_img=get_the_post_thumbnail_url(); 
+                                    if(!empty($agenda_img)){
+                                       $return.='<img src="'.$agenda_img.'" class="image"/>';
+                                    }else{
+                                       $return.='<img src="'.CWEB_WS_PATH1.'/public/assets/img/dummy.jpg" class="image"/>';
+                                    }
+                        $return.='<div class="overlay_custom">
+                        <div class="text_hover">
+                            <a href="'.get_the_permalink().'"><i class="fa fa-link" aria-hidden="true"></i></a>
+                        </div>
+                        </div>
+                                </div>
+                                <div class="agenda_title">';
+                                     $return.='<h1><a style="color:#c0392b;" href="'.get_the_permalink().'">
+                                       '.get_the_title().'</a>
+                                        </h1>                            
+                                </div>
+                                <div class="agenda_details">
+                                    <div class="lang_details">
+                                        <span class="lang_label">Data : </span>';
+                                        
+                                            $euroTimestamp=strtotime(get_post_meta(get_the_ID(),'_start_date',true));
+                                            $start_date= date("d/m/Y", $euroTimestamp);
+                                    
+                                        $return.='<span class="lang_value">'.$start_date.'</span>';
+                                   $return.=' </div>';
+                                   $return.='<div class="classification_details">
+                                        <span class="class_label">'.get_post_meta(get_the_ID(),'_start_time', true).'</span>
+                                    </div>
+                                </div>
+                            </div>'; 
+                            $i++;
+                                  if ($i % $value == 0) {
+                                      echo '</div><div class="row">';
+                                  }
+                                } 
+                    $return.='</div>';
+                    /* Restore original Post Data */
+                    wp_reset_postdata();
+                     } else {
+                          echo 'No Agenda Available.';
+                    }
+        $return.='</div>
+  </div>  </div>    
+<div class="clearfix" style="clear:both"></div>';
+        return $return;
+    }
+add_shortcode('highlight_events','highlight_events');
+
+
+//test shortcode
+
+
+
+
+
+
+
 
 
 

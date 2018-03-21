@@ -7,10 +7,9 @@ class Plugin_Activator {
 	/* Activate Class */
 	public static function activate() {
         global $wpdb;	
-        
         //add page  All agenda
             $_all_agenda = get_option('all_agenda');
-            if(!empty($_actor_page)){
+            if(!empty($_all_agenda)){
                 if(FALSE === get_post_status( $_all_agenda )){
                     $login_not_exist = 1;
                 }
@@ -23,9 +22,9 @@ class Plugin_Activator {
                 $page['post_parent']  = 0;
                 $page['post_author']  = 1;
                 $page['post_status']  = 'publish';
-                $page['post_title']   = 'Programação';
+                $page['post_title']   = 'Programaçãos';
                 $page = apply_filters('yourplugin_add_new_page', $page, 'teams');
-                $pageid = wp_insert_post ($page);
+                $pageid = wp_insert_post($page);
                 add_option( 'all_agenda', $pageid, '', 'yes' );
                 
             }//end
@@ -38,6 +37,7 @@ class Plugin_Activator {
             // update permalink
             
             update_option('permalink_structure','/%postname%/');
+
             
         }//end public class
  } // end main class

@@ -64,6 +64,15 @@
                              <?php  echo  WP_PLUGIN_DIR.'/fortaleza-events/get-events.php'; ?>
                             </td>
                         </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="_catalog_news">Shortcode</label>
+                            </th>
+                            <td>
+                                <input readonly="" type="text" style="width:400px;" name="from" value='[highlight_events category-name="Enter Category Name"]'>
+                                <br><p class="description">This shortcode is used to display events in any page.</p>
+                            </td>                
+                        </tr>
                     </tbody>
                 </table>
                 <div class="submit_btn">

@@ -20,5 +20,8 @@ class Plugin_Deactivator {
                     delete_option('listing_layout');
                 }
             //$wpdb->query( "DROP TABLE IF EXISTS wp_creator_short_data" );
-                }
+
+                // delete highlights terms
+               
             }
+}

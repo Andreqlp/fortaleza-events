@@ -48,7 +48,10 @@
 
 
 /*  Second Form Css */
-
+footer{
+    float:left;
+    width:100%;
+}
 .all_agenda {
     float: left;
     width: 100%;
@@ -147,7 +150,7 @@ footer#colophon {
 }
 /***************************/
 
-#container {
+#container_hover {
   position: relative;
 }
 
@@ -169,11 +172,11 @@ footer#colophon {
   transition: .5s ease;
 }
 
-#container:hover .overlay_custom {
+#container_hover:hover .overlay_custom {
   width: 100%;
 }
 
-.text {
+.text_hover {
   white-space: nowrap; 
   color: white;
   font-size: 20px;
@@ -184,7 +187,7 @@ footer#colophon {
   transform: translate(-50%, -50%);
   -ms-transform: translate(-50%, -50%);
 }
-.text i {
+.text_hover i {
     color: #fff;
 }
 .classofication i {
@@ -324,6 +327,7 @@ div#start_time_chosen {
 .single-agenda-main-page {
     float: left;
     width: 100%;
+    margin-top: 20px;
 }
 .single-inner-page {
     margin: auto;
@@ -467,3 +471,7 @@ div#start_time_chosen {
     width: 100%;
 }
 
+.single-agenda #main-footer{
+    width:100%;
+    float:left;
+}

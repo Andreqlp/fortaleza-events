@@ -1,5 +1,5 @@
 <?php get_header(); ?>
-<div class="container">
+<div class="container_all_agenda">
 <div class="all_agenda">
     <div class="inner_agenda">
         <div class="filter_agenda">
@@ -12,8 +12,7 @@
                             'order'             => 'ASC',
                             'hide_empty'        => 0, 
                         );
-                        $classification= get_terms('classifaction', $args);
-                        ?>
+                        $classification= get_terms('classifaction', $args);?>
                         <i class="fa fa-folder-o" aria-hidden="true"></i>
                         <select data-placeholder="CLASSIFICACÃO INDICATIVA" class="chosen-select" id="classification">
                             <option value=""></option>
@@ -24,7 +23,6 @@
                                 }
                             ?>
                         </select>
-                            
                     </div>
                     <div class="start_time">
                          <?php
@@ -35,7 +33,7 @@
                         );
                         $start_at= get_terms('start_at', $args);
                         ?>
-			<i class="fa fa-tags" aria-hidden="true"></i>
+			            <i class="fa fa-tags" aria-hidden="true"></i>
                         <select data-placeholder="HORÁRIO" class="chosen-select" id="start_time">
                             <option value=""></option>
                             <?php 
@@ -49,7 +47,7 @@
                 </div>
                 <div class="second_row_filed">		  
                     <div class="start_on_date">
-			 <i class="fa fa-calendar" aria-hidden="true"></i>
+			            <i class="fa fa-calendar" aria-hidden="true"></i>
                         <input type="text" id="start_date" name="start_date" placeholder="DATA"/>    
                     </div>
 		    <div class="event_title">
@@ -66,10 +64,13 @@
                 $args = array(
                      'post_type' => 'agenda',
                      'post_status' => 'publish',
-                     'order' => 'DESC',
-                     'orderby' => 'name',
+                     'orderby'           => 'meta_value',
+                     'meta_key'          => '_start_date',
+                     'meta_type'         => 'DATE',
+                     'order'             => 'DESC',
                      'posts_per_page' => -1
                 );
+
                 $the_query = new WP_Query( $args );
                 $listing_layout=get_option('listing_layout');
                 if($listing_layout=='three_colums'){
@@ -89,16 +90,16 @@
                 if ( $the_query->have_posts() ) {
                         while ($the_query->have_posts() ) { $the_query->the_post(); ?>
                           <div class='<?php echo $class; ?> <?php if ($i % $value == 0){echo 'first';}?>' >
-                                <div class="agenda_image" id="container">
+                                <div class="agenda_image" id="container_hover">
                                     <?php  $agenda_img=get_the_post_thumbnail_url(); 
                                     if(!empty($agenda_img)){?>
                                        <img src="<?php echo $agenda_img; ?>" class="image"/>
                                     <?php }else{?>
                                         <img src="<?php echo CWEB_WS_PATH1;?>/public/assets/img/dummy.jpg" class="image"/>
                                     <?php } ?>
-				   <div class="overlay_custom">
-					<div class="text"><a href="<?php echo get_the_permalink(); ?>"><i class="fa fa-link" aria-hidden="true"></i></a></div>
-				   </div>
+				                    <div class="overlay_custom">
+					               <div class="text_hover"><a href="<?php echo get_the_permalink(); ?>"><i class="fa fa-link" aria-hidden="true"></i></a></div>
+				            </div>
                                 </div>
                                 <div class="agenda_title">
                                     <h1><a style="color:#c0392b;" href="<?php echo get_the_permalink(); ?>"><?php echo get_the_title(); ?></a></h1>                            
@@ -136,6 +137,12 @@
 </div>
 </div>
 <div class="clearfix" style="clear:both"></div>
-
-
+<style>
+    .container_all_agenda {
+    width: 80%;
+    margin: auto;
+    max-width: 1080px;
+    position: relative;
+}
+</style>   
 <?php get_footer();?>
